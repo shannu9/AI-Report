@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-pandas
-matplotlib
-seaborn
-fpdf
-openai
-python-multipart
