@@ -4,7 +4,7 @@ import pandas as pd
 import uuid
 import os
 from pathlib import Path
-from pdf_report import generate_pdf_report
+from pdf_report import PDFReport
 from data_analysis import analyze_data
 from ai_agent import process_with_ai_agent
 
@@ -43,8 +43,14 @@ async def generate_report(
     else:
         analysis_result = analyze_data(df, industry)
 
-    # Generate PDF report
-    report_path = REPORT_DIR / f"{file_id}_report.pdf"
-    generate_pdf_report(report_path, analysis_result)
+    # Generate PDF report using PDFReport class
+    summary = analysis_result.get("summary", "")
+    strategy = analysis_result.get("strategy", "")
+    insights = analysis_result.get("insights", "")
+    plots = analysis_result.get("plots", [])
+    table_data = analysis_result.get("table_data", [])
+
+    pdf_tool = PDFReport(output_path=REPORT_DIR)
+    report_path = pdf_tool.create_pdf(summary, strategy, insights, plots, table_data)
 
     return FileResponse(path=report_path, filename="AI_Insights_Report.pdf", media_type='application/pdf')
