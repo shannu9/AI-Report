@@ -52,37 +52,47 @@ class AIAgent:
 
 
 # ✅ Use this in main.py
-def process_with_ai_agent(api_key, records, industry):
+def process_with_ai_agent(api_key, records, industry, base_result=None):
     import pandas as pd
 
-    # Step 1: Prepare dataframe
+    # Step 1: Convert to DataFrame
     df = pd.DataFrame(records)
 
-    # Step 2: Run traditional analysis first
-    full_analysis_text = analyze_data(df, industry)
-    
-    # Step 3: Extract summary, pattern, strategy sections
-    summary_section = f"The uploaded dataset contains {len(records)} records related to the {industry} industry."
-    
-    if "Linear Regression Analysis:" in full_analysis_text:
-        pattern_start = full_analysis_text.index("Linear Regression Analysis:")
-        pattern_end = full_analysis_text.index("Strategic Suggestions:") if "Strategic Suggestions:" in full_analysis_text else len(full_analysis_text)
-        patterns = full_analysis_text[pattern_start:pattern_end].strip()
+    # Step 2: If base_result (from non-AI version) exists, reuse it
+    if base_result:
+        summary_section = base_result.get("summary", f"The uploaded dataset contains {len(records)} records related to the {industry} industry.")
+        patterns = base_result.get("patterns", "No significant patterns found.")
+        suggestions = base_result.get("strategy", "No specific strategy found.")
+        plots = base_result.get("plots", [])
+        table_data = base_result.get("table_data", records[:10])
     else:
-        patterns = "No significant regression patterns found."
+        # Otherwise, run local analysis
+        full_analysis_text = analyze_data(df, industry)
+        summary_section = f"The uploaded dataset contains {len(records)} records related to the {industry} industry."
 
-    suggestions_start = full_analysis_text.find("Strategic Suggestions:")
-    suggestions = full_analysis_text[suggestions_start:].strip() if suggestions_start != -1 else "No specific suggestions identified."
+        if "Linear Regression Analysis:" in full_analysis_text:
+            pattern_start = full_analysis_text.index("Linear Regression Analysis:")
+            pattern_end = full_analysis_text.index("Strategic Suggestions:") if "Strategic Suggestions:" in full_analysis_text else len(full_analysis_text)
+            patterns = full_analysis_text[pattern_start:pattern_end].strip()
+        else:
+            patterns = "No significant regression patterns found."
 
-    # Step 4: Call OpenAI for enhanced insight
+        suggestions_start = full_analysis_text.find("Strategic Suggestions:")
+        suggestions = full_analysis_text[suggestions_start:].strip() if suggestions_start != -1 else "No specific suggestions identified."
+
+        plots = []
+        table_data = records[:10]
+
+    # Step 3: Query GPT Agent
     ai = AIAgent(api_key)
     insights = ai.query_insights(industry, summary_section, patterns, suggestions)
 
-    # Step 5: Return everything
+    # Step 4: Return enhanced result
     return {
         "summary": summary_section,
         "strategy": suggestions,
+        "patterns": patterns,
         "insights": insights,
-        "plots": [],
-        "table_data": records[:10]
+        "plots": plots,
+        "table_data": table_data
     }
