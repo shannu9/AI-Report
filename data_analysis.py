@@ -68,4 +68,11 @@ def analyze_data(df: pd.DataFrame, industry: str) -> str:
     else:
         report_lines.append("- Use regression and clustering to uncover trends and segment customers.")
 
-    return "\n".join(report_lines)
+    return {
+        "summary": f"Analyzed {len(df)} records with {len(df.columns)} features.",
+        "strategy": "Use the insights above to take action based on linear trends and clusters.",
+        "insights": "\n".join(report_lines),
+        "plots": [],
+        "table_data": df.head(10).values.tolist()
+    }
+
