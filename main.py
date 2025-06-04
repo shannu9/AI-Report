@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import uuid
 import os
@@ -8,7 +9,17 @@ from pdf_report import PDFReport
 from data_analysis import analyze_data
 from ai_agent import process_with_ai_agent
 
+
 app = FastAPI()
+
+# ✅ Add this CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://shanmukh-resume.web.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 UPLOAD_DIR = Path("uploads")
 REPORT_DIR = Path("reports")
