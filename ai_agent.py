@@ -52,10 +52,10 @@ class AIAgent:
 
 
 # ✅ Add this function so main.py can import it
-def process_with_ai_agent(api_key, records, industry):
-    summary = f"The uploaded dataset contains {len(records)} records related to the {industry} industry."
-    patterns = "Patterns identified using basic statistical insights and correlations."
-    suggestions = "Standard strategic suggestions based on the given data."
+def process_with_ai_agent(api_key, records, industry, base_result):
+    summary = base_result.get("summary", "")
+    patterns = base_result.get("patterns", "Statistical patterns not explicitly extracted.")
+    suggestions = base_result.get("strategy", "")
 
     ai = AIAgent(api_key)
     insights = ai.query_insights(industry, summary, patterns, suggestions)
@@ -64,6 +64,6 @@ def process_with_ai_agent(api_key, records, industry):
         "summary": summary,
         "strategy": suggestions,
         "insights": insights,
-        "plots": [],
-        "table_data": records[:10]
+        "plots": base_result.get("plots", []),
+        "table_data": base_result.get("table_data", [])
     }
