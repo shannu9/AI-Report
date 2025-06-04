@@ -6,3 +6,4 @@ seaborn
 fpdf
 openai
 python-multipart
+scikit-learn
