@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import os
 import uuid
 
-class PDFReport:
+class PDFReport(FPDF):
     def __init__(self, output_path="output"):
+        super().__init__()
         self.output_path = output_path
         os.makedirs(output_path, exist_ok=True)
 
@@ -14,63 +15,69 @@ class PDFReport:
         plt.close(fig)
         return path
 
-    def add_watermark(self, pdf, text="Shanmukh"):
-        pdf.set_text_color(240, 240, 240)  # Light gray
-        pdf.set_font("Arial", "B", 40)
+    def add_watermark(self, text="Shanmukh"):
+        # Add a rotated text watermark across the page center
+        self.set_text_color(230, 230, 230)
+        self.set_font("Arial", "B", 50)
+        self.set_xy(0, 0)
+        self.rotate(45, x=self.w / 2, y=self.h / 2)
+        self.text(self.w / 2 - 30, self.h / 2, text)
+        self.rotate(0)
 
-        # Simulate diagonal by placing same text multiple times diagonally
-        for i in range(0, 300, 50):
-            pdf.set_xy(i - 50, i)
-            pdf.cell(200, 10, text, ln=False)
+    def rotate(self, angle, x=None, y=None):
+        from math import cos, sin, radians
+        angle = radians(angle)
+        c, s = cos(angle), sin(angle)
+        if x is None: x = self.x
+        if y is None: y = self.y
+        cx, cy = x * self.k, (self.h - y) * self.k
+        self._out(f'q {c:.5f} {s:.5f} {-s:.5f} {c:.5f} {cx - c * cx + s * cy:.5f} {cy - s * cx - c * cy:.5f} cm')
 
-        pdf.set_text_color(0, 0, 0)  # Reset to default
+    def rotate_end(self):
+        self._out('Q')
+
+    def header(self):
+        self.add_watermark()
 
     def create_pdf(self, summary, strategy, insights, plots, table_data):
-        pdf = FPDF()
-        
-        # Page 1: Summary
-        pdf.add_page()
-        self.add_watermark(pdf)
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(200, 10, "Business Analysis Report", ln=True, align="C")
-        pdf.set_font("Arial", "", 12)
+        self.add_page()
+        self.set_font("Arial", "B", 16)
+        self.set_text_color(0, 0, 0)
+        self.cell(200, 10, "Business Analysis Report", ln=True, align="C")
+        self.set_font("Arial", "", 12)
 
-        pdf.ln(10)
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, "Executive Summary", ln=True)
-        pdf.set_font("Arial", "", 12)
-        pdf.multi_cell(0, 10, summary)
+        self.ln(10)
+        self.set_font("Arial", "B", 14)
+        self.cell(200, 10, "Executive Summary", ln=True)
+        self.set_font("Arial", "", 12)
+        self.multi_cell(0, 10, summary)
 
-        pdf.ln(5)
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, "Recommended Strategies", ln=True)
-        pdf.set_font("Arial", "", 12)
-        pdf.multi_cell(0, 10, strategy)
+        self.ln(5)
+        self.set_font("Arial", "B", 14)
+        self.cell(200, 10, "Recommended Strategies", ln=True)
+        self.set_font("Arial", "", 12)
+        self.multi_cell(0, 10, strategy)
 
-        pdf.ln(5)
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, "Insights", ln=True)
-        pdf.set_font("Arial", "", 12)
-        pdf.multi_cell(0, 10, insights)
+        self.ln(5)
+        self.set_font("Arial", "B", 14)
+        self.cell(200, 10, "Insights", ln=True)
+        self.set_font("Arial", "", 12)
+        self.multi_cell(0, 10, insights)
 
-        # Page(s): Plots
         for plot_path in plots:
-            pdf.add_page()
-            self.add_watermark(pdf)
-            pdf.image(plot_path, x=10, y=30, w=190)
+            self.add_page()
+            self.image(plot_path, x=10, y=30, w=190)
 
-        # Page: Data Table
         if table_data:
-            pdf.add_page()
-            self.add_watermark(pdf)
-            pdf.set_font("Arial", "B", 14)
-            pdf.cell(200, 10, "Key Data Table", ln=True)
-            pdf.set_font("Arial", "", 10)
-            for row in table_data[:30]:  # Limit to 30 rows
+            self.add_page()
+            self.set_font("Arial", "B", 14)
+            self.cell(200, 10, "Key Data Table", ln=True)
+            self.set_font("Arial", "", 10)
+            for row in table_data[:30]:
                 line = " | ".join(str(cell) for cell in row)
-                pdf.multi_cell(0, 6, line)
+                self.multi_cell(0, 6, line)
 
         filename = f"report_{uuid.uuid4().hex[:8]}.pdf"
         filepath = os.path.join(self.output_path, filename)
-        pdf.output(filepath)
+        self.output(filepath)
         return filepath
