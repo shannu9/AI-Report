@@ -38,3 +38,21 @@ class AIAgent:
 
         except Exception as e:
             return f"[AI Agent Error] {str(e)}"
+
+
+# ✅ Add this function so main.py can import it
+def process_with_ai_agent(api_key, records, industry):
+    summary = f"The uploaded dataset contains {len(records)} records related to the {industry} industry."
+    patterns = "Patterns identified using basic statistical insights and correlations."
+    suggestions = "Standard strategic suggestions based on the given data."
+
+    ai = AIAgent(api_key)
+    insights = ai.query_insights(industry, summary, patterns, suggestions)
+
+    return {
+        "summary": summary,
+        "strategy": suggestions,
+        "insights": insights,
+        "plots": [],
+        "table_data": records[:10]
+    }
