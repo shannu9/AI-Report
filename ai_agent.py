@@ -3,8 +3,7 @@ import os
 
 class AIAgent:
     def __init__(self, api_key: str):
-        self.api_key = api_key
-        openai.api_key = self.api_key
+        self.client = openai.OpenAI(api_key=api_key)
 
     def query_insights(self, industry: str, summary: str, patterns: str, suggestions: str) -> str:
         try:
