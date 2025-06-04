@@ -50,6 +50,8 @@ async def generate_report(
             suggestions = "Initial business suggestions."
             insights = agent.query_insights(industry, summary, patterns, suggestions)
             strategy = "Suggested strategies from AI"
+            plots = []         # ✅ define empty list   
+            table_data = []    # ✅ define empty list
         else:
             result = analyze_data(df, industry)
             summary = result.get("summary", "")
