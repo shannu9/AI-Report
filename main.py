@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import uuid
 import os
+import traceback
 from pathlib import Path
 from pdf_report import PDFReport
 from data_analysis import analyze_data
@@ -80,4 +81,6 @@ async def generate_report(
 
     except Exception as e:
         print("Error:", str(e))
+        print("❌ INTERNAL ERROR:")
+        traceback.print_exc() 
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
