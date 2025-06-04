@@ -1,5 +1,3 @@
-# pdf_report.py
-
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 import os
@@ -16,42 +14,55 @@ class PDFReport:
         plt.close(fig)
         return path
 
+    def add_watermark(self, pdf, text="Shanmukh"):
+        pdf.set_text_color(240, 240, 240)  # Light gray
+        pdf.set_font("Arial", "B", 40)
+
+        # Simulate diagonal by placing same text multiple times diagonally
+        for i in range(0, 300, 50):
+            pdf.set_xy(i - 50, i)
+            pdf.cell(200, 10, text, ln=False)
+
+        pdf.set_text_color(0, 0, 0)  # Reset to default
+
     def create_pdf(self, summary, strategy, insights, plots, table_data):
         pdf = FPDF()
+        
+        # Page 1: Summary
         pdf.add_page()
+        self.add_watermark(pdf)
         pdf.set_font("Arial", "B", 16)
         pdf.cell(200, 10, "Business Analysis Report", ln=True, align="C")
         pdf.set_font("Arial", "", 12)
 
-        # Summary
         pdf.ln(10)
         pdf.set_font("Arial", "B", 14)
         pdf.cell(200, 10, "Executive Summary", ln=True)
         pdf.set_font("Arial", "", 12)
         pdf.multi_cell(0, 10, summary)
 
-        # Strategy Suggestions
         pdf.ln(5)
         pdf.set_font("Arial", "B", 14)
         pdf.cell(200, 10, "Recommended Strategies", ln=True)
         pdf.set_font("Arial", "", 12)
         pdf.multi_cell(0, 10, strategy)
 
-        # Insights
         pdf.ln(5)
         pdf.set_font("Arial", "B", 14)
         pdf.cell(200, 10, "Insights", ln=True)
         pdf.set_font("Arial", "", 12)
         pdf.multi_cell(0, 10, insights)
 
-        # Plots
+        # Page(s): Plots
         for plot_path in plots:
             pdf.add_page()
+            self.add_watermark(pdf)
             pdf.image(plot_path, x=10, y=30, w=190)
 
-        # Data table (as text)
+        # Page: Data Table
         if table_data:
             pdf.add_page()
+            self.add_watermark(pdf)
             pdf.set_font("Arial", "B", 14)
             pdf.cell(200, 10, "Key Data Table", ln=True)
             pdf.set_font("Arial", "", 10)
